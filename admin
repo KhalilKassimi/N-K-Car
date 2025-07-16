@@ -1,1 +1,19 @@
+<?php
+require_once __DIR__ . '/../config/database.php';
 
+try {
+    // Ajout de la colonne daily_rate si elle n'existe pas
+    $pdo->exec("ALTER TABLE vehicles ADD COLUMN IF NOT EXISTS daily_rate DECIMAL(10,2) NOT NULL DEFAULT 0.00");
+    
+    // Mise à jour des prix existants en fonction de la catégorie
+    $pdo->exec("
+        UPDATE vehicles v
+        JOIN vehicle_categories vc ON v.category_id = vc.id
+        SET v.daily_rate = vc.daily_rate
+        WHERE v.daily_rate = 0.00
+    ");
+    
+    echo "La colonne daily_rate a été ajoutée avec succès.";
+} catch (PDOException $e) {
+    echo "Erreur : " . $e->getMessage();
+} 
